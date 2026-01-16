@@ -4,6 +4,16 @@
 
 适合春节/年会/群活动的线上抽奖骨架：**导入名单（IMPORT）** + **开放报名（SIGNUP）** 两种参与者来源可共存，并提供可配置的结果可见性（公开 / 仅管理员可见）。
 
+## 截图
+
+把截图放到 `docs/screenshots/`（见 `docs/screenshots/README.md` 的命名建议）。
+
+![管理端首页（活动列表）](docs/screenshots/01-draw-stage.png)
+![创建朋友圈红包（PC）](docs/screenshots/02-draw-stage.png)
+![朋友圈红包：进入房间（口令）](docs/screenshots/03-draw-stage.png)
+![朋友圈红包：开奖卡 + 彩纸](docs/screenshots/04-draw-stage.png)
+![年会抽奖：3D 舞台（奖项选择）](docs/screenshots/05-draw-stage.png)
+
 ## 技术栈
 
 - **包管理**：pnpm（workspace 单仓）

@@ -262,6 +262,7 @@ onMounted(refreshAll);
       <div class="links">
         <a :href="`/events/${eventId}/signup`">报名页</a>
         <a :href="`/events/${eventId}/results`">公开结果</a>
+        <a :href="`/events/${eventId}/draw`">3D抽奖舞台</a>
       </div>
       <div class="actions">
         <button class="danger" @click="resetDraws" :disabled="loading">重置抽奖（清空中奖）</button>

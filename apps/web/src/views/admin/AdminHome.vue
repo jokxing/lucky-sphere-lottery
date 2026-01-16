@@ -101,6 +101,7 @@ onMounted(refresh);
             <a :href="`/admin/events/${e.id}`">管理</a>
             <a :href="`/events/${e.id}/signup`">报名页</a>
             <a :href="`/events/${e.id}/results`">公开结果</a>
+            <a :href="`/events/${e.id}/draw`">3D舞台</a>
           </div>
         </li>
       </ul>

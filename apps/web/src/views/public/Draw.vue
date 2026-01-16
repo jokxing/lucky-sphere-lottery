@@ -25,6 +25,9 @@ const confettiOn = ref(false);
 const lastWinners = ref<Array<{ participantId: string; displayName: string }>>([]);
 const showWinnerCard = ref(false);
 
+// “重新生成演示数据”是开发/演示用按钮：避免正式活动里误触与困惑
+const isDevDemo = computed(() => import.meta.env.DEV && location.hostname === "localhost");
+
 const participants = computed(() => state.value?.participants || []);
 const prizes = computed(() => state.value?.prizes || []);
 const winsCount = computed(() => (state.value?.wins || []).length);
@@ -242,15 +245,14 @@ watch(
           已经没有可抽的人了（不允许重复中奖）。
         </div>
         <div v-else-if="error" class="error">错误：{{ error }}</div>
-        <button class="ghost" @click="resetDemo" :disabled="loading" style="width: 100%">
-          重新生成演示数据
+        <button v-if="isDevDemo" class="ghost" @click="resetDemo" :disabled="loading" style="width: 100%">
+          开发用：重置演示数据
         </button>
         <div v-if="loading && !state" class="muted">加载中…</div>
       </aside>
 
       <div class="centerHint">
         <div class="big">{{ tickerName }}</div>
-        <div class="ui-hint">点击底部“开始抽奖”，先做动效，再以服务端结果开奖（不允许重复中奖）。</div>
       </div>
 
       <footer class="bottom">
