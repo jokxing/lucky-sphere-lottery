@@ -1,0 +1,129 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+enum JoinMode {
+  IMPORT_ONLY
+  OPEN_SIGNUP
+  BOTH
+}
+
+enum ParticipantSource {
+  IMPORT
+  SIGNUP
+}
+
+model Room {
+  id              String   @id @default(cuid())
+  title           String
+  accessCode      String   // 6 位数字
+  totalAmountCents     Int
+  remainingAmountCents Int
+  totalCount      Int
+  remainingCount  Int
+  minCents        Int      @default(1)
+  maxCents        Int?
+  createdAt       DateTime @default(now())
+  closedAt        DateTime?
+
+  claims RoomClaim[]
+
+  @@index([createdAt])
+}
+
+model RoomClaim {
+  id        String   @id @default(cuid())
+  roomId    String
+  deviceId  String
+  name      String
+  amountCents Int
+  createdAt DateTime @default(now())
+
+  room Room @relation(fields: [roomId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, deviceId])
+  @@index([roomId, createdAt])
+}
+
+model Event {
+  id         String    @id @default(cuid())
+  title      String
+  joinMode   JoinMode  @default(BOTH)
+  accessCode String?
+  resultsPublic Boolean @default(true) // 公开结果页开关：false=仅管理员可见
+  createdAt  DateTime  @default(now())
+
+  prizes      Prize[]
+  participants Participant[]
+  draws       Draw[]
+  wins        Win[]
+}
+
+model Prize {
+  id          String   @id @default(cuid())
+  eventId     String
+  name        String
+  winnersCount Int     @default(1)
+  order       Int      @default(0)
+  createdAt   DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  draws Draw[]
+  wins  Win[]
+
+  @@index([eventId, order])
+}
+
+model Participant {
+  id          String            @id @default(cuid())
+  eventId     String
+  displayName String
+  source      ParticipantSource
+  disabled    Boolean           @default(false)
+  createdAt   DateTime          @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  wins  Win[]
+
+  @@index([eventId, createdAt])
+}
+
+model Draw {
+  id        String   @id @default(cuid())
+  eventId   String
+  prizeId   String
+  count     Int
+  seed      String
+  createdAt DateTime @default(now())
+
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  prize Prize @relation(fields: [prizeId], references: [id], onDelete: Cascade)
+  wins  Win[]
+
+  @@index([eventId, createdAt])
+}
+
+model Win {
+  id            String   @id @default(cuid())
+  eventId       String
+  drawId        String
+  prizeId       String
+  participantId String
+  createdAt     DateTime @default(now())
+
+  event       Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  draw        Draw        @relation(fields: [drawId], references: [id], onDelete: Cascade)
+  prize       Prize       @relation(fields: [prizeId], references: [id], onDelete: Cascade)
+  participant Participant @relation(fields: [participantId], references: [id], onDelete: Cascade)
+
+  // “不允许重复中奖”：同一个活动里，一个人只能中一次（无论哪个奖项）
+  @@unique([eventId, participantId])
+  @@index([eventId, prizeId])
+}
+
+
