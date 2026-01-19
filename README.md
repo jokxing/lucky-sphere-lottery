@@ -61,6 +61,44 @@ pnpm dev
 2. 创建成功后，把 **参与页链接 + 6 位口令** 发到群里
 3. 榜单页：`/rooms/:roomId/board`（同样需要口令）
 
+## 免费部署（Render/Fly + Pages）
+
+> 推荐形态：**前端静态站（Pages） + 后端 API（Render/Fly）**。  
+> 你需要给前端配置一个环境变量 `VITE_API_BASE` 指向后端域名，否则前端默认请求同域 `/api`。
+
+### A. 部署后端（Render）
+
+1. 进入 Render 创建 **Web Service**，选择 GitHub 仓库：[`jokxing/lucky-sphere-lottery`](https://github.com/jokxing/lucky-sphere-lottery)
+2. 设置：
+   - **Root Directory**：留空（仓库根目录）
+   - **Build Command**：
+     - `pnpm install`
+     - `pnpm -C apps/api build`
+     - `pnpm -C apps/api prisma:push`
+   - **Start Command**：`pnpm -C apps/api start`
+3. 环境变量（Render Dashboard → Environment）：
+   - `ADMIN_KEY`：管理员口令（例如 `dev-admin`，建议改复杂）
+   - `DATABASE_URL`：默认 SQLite（示例：`file:./dev.db`）
+   - `NODE_ENV`：`production`
+   - `PORT`：Render 会注入（无需手动填）
+
+> 注意：SQLite 在部分免费平台可能不保证长期持久化；如果你要长期运营，建议后续迁移到 Postgres。
+
+### B. 部署后端（Fly.io）
+
+思路同 Render：部署一个 Node 服务，设置环境变量 `ADMIN_KEY` / `DATABASE_URL`，并执行 `pnpm -C apps/api prisma:push` 初始化数据库结构。
+
+### C. 部署前端（Cloudflare Pages / Vercel / Netlify）
+
+1. 选择 GitHub 仓库：[`jokxing/lucky-sphere-lottery`](https://github.com/jokxing/lucky-sphere-lottery)
+2. Build 设置：
+   - **Build Command**：`pnpm install && pnpm -C apps/web build`
+   - **Output Directory**：`apps/web/dist`
+3. 环境变量（必填）：
+   - `VITE_API_BASE`：后端地址，例如 `https://xxx.onrender.com`
+
+部署完成后，访问前端域名即可（管理端 `/admin`，朋友圈红包 `/rooms/new`）。
+
 ## 规则说明
 
 - **不允许重复中奖**：数据库层面约束（同一 event 下 participant 只能有一条中奖记录）。

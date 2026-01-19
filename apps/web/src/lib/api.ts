@@ -14,13 +14,27 @@ export class ApiError<T = any> extends Error {
   }
 }
 
+function apiBase() {
+  // 生产环境（前端与后端分域部署）可配置：
+  // VITE_API_BASE="https://xxx.onrender.com"
+  const raw = String((import.meta as any).env?.VITE_API_BASE || "").trim();
+  return raw.replace(/\/+$/, ""); // trim trailing slashes
+}
+
+function joinUrl(base: string, path: string) {
+  if (!base) return path;
+  if (!path.startsWith("/")) return `${base}/${path}`;
+  return `${base}${path}`;
+}
+
 async function request<T>(path: string, init: RequestInit = {}) {
   const headers = new Headers(init.headers || {});
   headers.set("content-type", "application/json");
   const key = adminKey();
   if (key) headers.set("x-admin-key", key);
 
-  const res = await fetch(path, { ...init, headers });
+  const url = joinUrl(apiBase(), path);
+  const res = await fetch(url, { ...init, headers });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
     throw new ApiError(String(data?.error || `HTTP_${res.status}`), res.status, data);
