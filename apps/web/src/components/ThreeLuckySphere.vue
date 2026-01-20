@@ -542,7 +542,9 @@ function rebuild() {
       })
       .sort((a, b) => b.d - a.d); // far -> near
     for (let i = 0; i < sorted.length; i++) {
-      sorted[i].c.mesh.renderOrder = i;
+      const s = sorted[i];
+      if (!s) continue;
+      s.c.mesh.renderOrder = i;
     }
 
     // 3D 彩纸爆炸：从中奖卡片背后喷出 + 重力落下（自然）

@@ -10,6 +10,7 @@ const exampleEventId = computed(() => String(route.query.eventId || ""));
 
 const loading = ref(false);
 const error = ref("");
+const apiBase = computed(() => String((import.meta as any).env?.VITE_API_BASE || "").trim());
 
 async function bootstrapDemo() {
   error.value = "";
@@ -36,13 +37,17 @@ async function bootstrapDemo() {
     <div class="tips">
       <div>本地开发：根目录执行 <code>pnpm install</code>，再执行 <code>pnpm dev</code></div>
       <div>后端默认端口：3001；前端通过 Vite proxy 直接请求 <code>/api</code></div>
+      <div v-if="apiBase">当前线上 API_BASE：<code>{{ apiBase }}</code></div>
+      <div v-else class="ui-hint ui-hint--warn">未配置 <code>VITE_API_BASE</code>：线上会请求同域 <code>/api</code>，在 Pages 上会出现 405/404。</div>
     </div>
 
     <div class="actions">
-      <button @click="bootstrapDemo" :disabled="loading">一键生成演示抽奖（写死导入+直接开奖）</button>
+      <button v-if="import.meta.env.DEV" @click="bootstrapDemo" :disabled="loading">一键生成演示抽奖（写死导入+直接开奖）</button>
       <button @click="router.push('/rooms/new')" :disabled="loading">创建朋友圈红包（虚拟）</button>
+      <button v-if="!import.meta.env.DEV" @click="router.push('/admin')" :disabled="loading">进入管理端（创建活动/抽奖）</button>
       <div v-if="error" class="error">错误：{{ error }}</div>
-      <div class="muted">会清空本地 SQLite 数据库并写入演示数据（仅开发环境可用）。</div>
+      <div v-if="import.meta.env.DEV" class="muted">会清空本地 SQLite 数据库并写入演示数据（仅开发环境可用）。</div>
+      <div v-else class="ui-hint">线上站点默认不提供“一键生成演示数据”，请在管理端创建活动并进入 3D 舞台。</div>
     </div>
 
     <div v-if="exampleEventId">

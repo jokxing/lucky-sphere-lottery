@@ -71,18 +71,20 @@ pnpm dev
 1. 进入 Render 创建 **Web Service**，选择 GitHub 仓库：[`jokxing/lucky-sphere-lottery`](https://github.com/jokxing/lucky-sphere-lottery)
 2. 设置：
    - **Root Directory**：留空（仓库根目录）
-   - **Build Command**：
-     - `pnpm install`
-     - `pnpm -C apps/api build`
-     - `pnpm -C apps/api prisma:push`
+   - **Build Command**（推荐一条写完，避免工作目录/步骤顺序问题）：
+     - `npm i -g pnpm && pnpm install --frozen-lockfile --prod=false && pnpm -C apps/api prisma:push && pnpm -C apps/api build`
    - **Start Command**：`pnpm -C apps/api start`
 3. 环境变量（Render Dashboard → Environment）：
    - `ADMIN_KEY`：管理员口令（例如 `dev-admin`，建议改复杂）
-   - `DATABASE_URL`：默认 SQLite（示例：`file:./dev.db`）
+   - `DATABASE_URL`：默认 SQLite（示例：`file:./prisma/dev.db`）
    - `NODE_ENV`：`production`
    - `PORT`：Render 会注入（无需手动填）
 
 > 注意：SQLite 在部分免费平台可能不保证长期持久化；如果你要长期运营，建议后续迁移到 Postgres。
+>
+> 另外：如果你点 Deploy 时弹出 **Add Card / verify identity**，这是 Render 的账号风控/验证流程，并非你的命令或环境变量填错；不方便绑定的话，可以先看下面的 Fly.io 或换任意可用的 Node 托管/VPS。
+>
+> 如果你在 Logs 里看到 `prisma: not found`，通常是因为设置了 `NODE_ENV=production` 导致安装依赖时跳过了 devDependencies；把 Build Command 的安装改成 `pnpm install ... --prod=false` 即可。
 
 ### B. 部署后端（Fly.io）
 
