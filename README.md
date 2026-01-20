@@ -61,6 +61,13 @@ pnpm dev
 2. 创建成功后，把 **参与页链接 + 6 位口令** 发到群里
 3. 榜单页：`/rooms/:roomId/board`（同样需要口令）
 
+## 在线体验（当前）
+
+- **前端（Cloudflare Pages）**：`https://4b6dd36c.lucky-sphere-lottery-aiw.pages.dev`
+- **后端（Render API）**：`https://y-sphere-lottery-api.onrender.com`
+
+> 说明：Render 免费实例可能会休眠，第一次打开/进管理端可能需要 10～60 秒冷启动。
+
 ## 免费部署（Render/Fly + Pages）
 
 > 推荐形态：**前端静态站（Pages） + 后端 API（Render/Fly）**。  

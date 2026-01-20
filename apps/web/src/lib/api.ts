@@ -34,6 +34,8 @@ async function request<T>(path: string, init: RequestInit = {}) {
   if (key) headers.set("x-admin-key", key);
 
   const url = joinUrl(apiBase(), path);
+  // Render 免费实例可能冷启动较慢，这里不做强制超时，避免误伤；
+  // 但提供给上层的错误信息会更友好（比如网络断开/跨域等）。
   const res = await fetch(url, { ...init, headers });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
@@ -43,6 +45,8 @@ async function request<T>(path: string, init: RequestInit = {}) {
 }
 
 export const api = {
+  health: () => request<{ ok: true }>("/health"),
+
   // demo
   demoBootstrap: () => request<any>("/api/demo/bootstrap", { method: "POST", body: JSON.stringify({}) }),
   demoState: (eventId: string) => request<any>(`/api/demo/events/${eventId}/state`),

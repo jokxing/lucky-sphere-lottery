@@ -6,7 +6,9 @@ import FullScreenLoading from "../../components/FullScreenLoading.vue";
 const adminKey = ref(localStorage.getItem("ADMIN_KEY") || "dev-admin");
 const events = ref<Array<any>>([]);
 const loading = ref(false);
+const loadingText = ref("正在加载管理数据…");
 const error = ref("");
+let loadingHintTimer: number | null = null;
 
 const form = ref({
   title: "春节抽奖",
@@ -21,13 +23,22 @@ function saveAdminKey() {
 async function refresh() {
   error.value = "";
   loading.value = true;
+  loadingText.value = "正在加载管理数据…";
+  if (loadingHintTimer) window.clearTimeout(loadingHintTimer);
+  loadingHintTimer = window.setTimeout(() => {
+    loadingText.value = "后端可能在冷启动（Render 免费版 10～60 秒），请稍候…";
+  }, 4500);
   try {
     saveAdminKey();
+    // 先 ping 一下，触发后端唤醒（不影响功能，但能减少第一次卡很久的体感）
+    await api.health().catch(() => {});
     events.value = await api.listEvents();
   } catch (e: any) {
     error.value = e?.message || String(e);
   } finally {
     loading.value = false;
+    if (loadingHintTimer) window.clearTimeout(loadingHintTimer);
+    loadingHintTimer = null;
   }
 }
 
@@ -54,7 +65,7 @@ onMounted(refresh);
 
 <template>
   <section class="stack">
-    <FullScreenLoading v-if="loading" text="正在加载管理数据…" />
+    <FullScreenLoading v-if="loading" :text="loadingText" />
     <div class="card">
       <h2>管理端</h2>
       <div class="row">
