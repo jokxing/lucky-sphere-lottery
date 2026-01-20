@@ -11,6 +11,7 @@ const exampleEventId = computed(() => String(route.query.eventId || ""));
 const loading = ref(false);
 const error = ref("");
 const apiBase = computed(() => String((import.meta as any).env?.VITE_API_BASE || "").trim());
+const devMode = computed(() => !!(import.meta as any).env?.DEV);
 
 async function bootstrapDemo() {
   error.value = "";
@@ -42,11 +43,11 @@ async function bootstrapDemo() {
     </div>
 
     <div class="actions">
-      <button v-if="import.meta.env.DEV" @click="bootstrapDemo" :disabled="loading">一键生成演示抽奖（写死导入+直接开奖）</button>
+      <button v-if="devMode" @click="bootstrapDemo" :disabled="loading">一键生成演示抽奖（写死导入+直接开奖）</button>
       <button @click="router.push('/rooms/new')" :disabled="loading">创建朋友圈红包（虚拟）</button>
-      <button v-if="!import.meta.env.DEV" @click="router.push('/admin')" :disabled="loading">进入管理端（创建活动/抽奖）</button>
+      <button v-if="!devMode" @click="router.push('/admin')" :disabled="loading">进入管理端（创建活动/抽奖）</button>
       <div v-if="error" class="error">错误：{{ error }}</div>
-      <div v-if="import.meta.env.DEV" class="muted">会清空本地 SQLite 数据库并写入演示数据（仅开发环境可用）。</div>
+      <div v-if="devMode" class="muted">会清空本地 SQLite 数据库并写入演示数据（仅开发环境可用）。</div>
       <div v-else class="ui-hint">线上站点默认不提供“一键生成演示数据”，请在管理端创建活动并进入 3D 舞台。</div>
     </div>
 
