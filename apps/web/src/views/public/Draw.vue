@@ -27,6 +27,7 @@ const showWinnerCard = ref(false);
 
 // “重新生成演示数据”是开发/演示用按钮：避免正式活动里误触与困惑
 const isDevDemo = computed(() => import.meta.env.DEV && location.hostname === "localhost");
+const useDemoApi = computed(() => isDevDemo.value);
 
 const participants = computed(() => state.value?.participants || []);
 const prizes = computed(() => state.value?.prizes || []);
@@ -84,7 +85,7 @@ async function load() {
   debug.value = "";
   loading.value = true;
   try {
-    state.value = await api.demoState(eventId.value);
+    state.value = useDemoApi.value ? await api.demoState(eventId.value) : await api.adminEventState(eventId.value);
     debug.value = `loaded: prizes=${state.value?.prizes?.length ?? 0}, participants=${state.value?.participants?.length ?? 0}, wins=${state.value?.wins?.length ?? 0}`;
     // 如果当前选中的 prizeId 不属于本活动（比如重置演示数据后），强制切到第一个奖项
     const prizeIds = new Set((prizes.value || []).map((p: any) => p.id));
@@ -93,7 +94,13 @@ async function load() {
       count.value = prizes.value[0].winnersCount || 1;
     }
   } catch (e: any) {
-    error.value = e?.message || String(e);
+    const msg = e?.message || String(e);
+    // 线上舞台使用 admin 接口：未设置 adminKey 时会 401
+    if (!useDemoApi.value && msg === "unauthorized") {
+      error.value = "unauthorized";
+    } else {
+      error.value = msg;
+    }
   } finally {
     loading.value = false;
   }
@@ -150,10 +157,15 @@ async function startDraw() {
   }
 
   try {
-    const r = await api.demoDraw(eventId.value, {
-      prizeId: selectedPrizeId.value,
-      count: count.value,
-    });
+    const r = useDemoApi.value
+      ? await api.demoDraw(eventId.value, {
+          prizeId: selectedPrizeId.value,
+          count: count.value,
+        })
+      : await api.draw(eventId.value, {
+          prizeId: selectedPrizeId.value,
+          count: count.value,
+        });
     tickerName.value = "开奖！";
     const winners = (r?.winners || []) as Array<{ participantId: string; displayName: string }>;
     highlightIds.value = new Set(winners.map((w) => w.participantId));
@@ -243,6 +255,12 @@ watch(
         <div class="muted">剩余可抽人数：{{ remainingCount }}</div>
         <div v-if="error === 'no_candidates'" class="error">
           已经没有可抽的人了（不允许重复中奖）。
+        </div>
+        <div v-else-if="error === 'unauthorized'" class="error">
+          未授权：请先到 <a href="/admin">管理端</a> 设置正确的 Admin Key（请求头 <code>x-admin-key</code>）。
+        </div>
+        <div v-else-if="error === 'not_found'" class="error">
+          活动不存在或无权限访问（检查 eventId 是否正确）。
         </div>
         <div v-else-if="error" class="error">错误：{{ error }}</div>
         <button v-if="isDevDemo" class="ghost" @click="resetDemo" :disabled="loading" style="width: 100%">
