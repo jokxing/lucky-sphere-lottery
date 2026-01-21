@@ -4,6 +4,19 @@
 
 适合春节/年会/群活动的线上抽奖骨架：**导入名单（IMPORT）** + **开放报名（SIGNUP）** 两种参与者来源可共存，并提供可配置的结果可见性（公开 / 仅管理员可见）。
 
+## 在线体验 & 联系我
+
+- **在线体验（前端）**：`https://4b6dd36c.lucky-sphere-lottery-aiw.pages.dev`
+- **联系我（部署/支持/定制）**：`mailto:64809547@qq.com`
+
+> Render 免费实例可能会休眠，第一次打开/进管理端可能需要 10～60 秒冷启动。
+
+## 快速支持（69 起）
+
+- **69（远程部署/排障支持）**：帮你把这套跑起来（Render + Pages）、配环境变量、把 AdminKey/结果可见性等设置走通。
+- **199（当日交付：换皮/文案）**：加上基础版 + 改 Logo/标题/主题色/落地页文案，适合朋友圈传播。
+- **699+（年会定制）**：加上标准版 + 大屏投屏/主持人流程优化/导入名单规则调整（按需求报价）。
+
 ## 截图
 
 把截图放到 `docs/screenshots/`（见 `docs/screenshots/README.md` 的命名建议）。
@@ -60,13 +73,6 @@ pnpm dev
 1. 打开创建页：`http://localhost:5173/rooms/new`
 2. 创建成功后，把 **参与页链接 + 6 位口令** 发到群里
 3. 榜单页：`/rooms/:roomId/board`（同样需要口令）
-
-## 在线体验（当前）
-
-- **前端（Cloudflare Pages）**：`https://4b6dd36c.lucky-sphere-lottery-aiw.pages.dev`
-- **后端（Render API）**：`https://y-sphere-lottery-api.onrender.com`
-
-> 说明：Render 免费实例可能会休眠，第一次打开/进管理端可能需要 10～60 秒冷启动。
 
 ## 免费部署（Render/Fly + Pages）
 

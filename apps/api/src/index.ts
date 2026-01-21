@@ -17,6 +17,37 @@ await app.register(cors, {
 app.get("/health", async () => ({ ok: true }));
 
 // --------------------
+// Tiny in-memory rate limit (free hosting anti-abuse)
+// - Enough for demo/hosted usage on a single instance.
+// - Not a security boundary; just prevents accidental/scripted spam.
+// --------------------
+type RateBucket = { resetAt: number; count: number };
+const rateBuckets = new Map<string, RateBucket>();
+function getClientIp(req: any) {
+  const xff = String(req.headers?.["x-forwarded-for"] || "");
+  const first = xff.split(",")[0]?.trim();
+  return first || req.ip || "unknown";
+}
+function hitRateLimit(req: any, reply: any, name: string, limit: number, windowMs: number) {
+  const ip = getClientIp(req);
+  const key = `${name}:${ip}`;
+  const now = Date.now();
+  const cur = rateBuckets.get(key);
+  if (!cur || now >= cur.resetAt) {
+    rateBuckets.set(key, { resetAt: now + windowMs, count: 1 });
+    return false;
+  }
+  cur.count += 1;
+  if (cur.count > limit) {
+    const retryAfter = Math.max(1, Math.ceil((cur.resetAt - now) / 1000));
+    reply.header("retry-after", String(retryAfter));
+    reply.code(429).send({ error: "rate_limited", retryAfter });
+    return true;
+  }
+  return false;
+}
+
+// --------------------
 // Demo (dev only)
 // --------------------
 app.post("/api/demo/bootstrap", async (req, reply) => {
@@ -197,6 +228,7 @@ function pickAmountCents(remainingAmountCents: number, remainingCount: number, m
 }
 
 app.post("/api/public/rooms", async (req, reply) => {
+  if (hitRateLimit(req, reply, "rooms:create", 12, 10 * 60 * 1000)) return; // 12 / 10min / IP
   // 无登录建房（第一版）
   const body = (req.body || {}) as {
     title?: string;
@@ -208,13 +240,17 @@ app.post("/api/public/rooms", async (req, reply) => {
   };
 
   const title = String(body.title || "").trim() || "朋友圈红包";
+  if (title.length > 40) return reply.code(400).send({ error: "title_too_long" });
   const accessCode = String(body.accessCode || "").trim();
   if (!isSixDigitCode(accessCode)) return reply.code(400).send({ error: "accessCode_invalid" });
 
   const totalAmountCents = toCentsAmount(body.totalAmount);
   if (totalAmountCents === null || totalAmountCents < 1) return reply.code(400).send({ error: "totalAmount_invalid" });
+  // 防止恶意超大数字撑爆存储/算力（演示足够）
+  if (totalAmountCents > 50_000_00) return reply.code(400).send({ error: "totalAmount_too_large" }); // 50,000 元
 
   const totalCount = Number.isFinite(body.totalCount) ? Math.max(1, Math.floor(body.totalCount!)) : 10;
+  if (totalCount > 500) return reply.code(400).send({ error: "totalCount_too_large" });
   const minCents = toCentsAmount(body.minAmount ?? 0.01);
   if (minCents === null || minCents < 1) return reply.code(400).send({ error: "minAmount_invalid" });
 
@@ -258,6 +294,7 @@ app.post("/api/public/rooms", async (req, reply) => {
 });
 
 app.post("/api/public/rooms/:roomId/enter", async (req, reply) => {
+  if (hitRateLimit(req, reply, "rooms:enter", 60, 60 * 1000)) return; // 60 / min / IP
   const { roomId } = req.params as { roomId: string };
   const body = (req.body || {}) as { accessCode?: string };
   const accessCode = String(body.accessCode || "").trim();
@@ -293,6 +330,7 @@ app.post("/api/public/rooms/:roomId/enter", async (req, reply) => {
 });
 
 app.post("/api/public/rooms/:roomId/claim", async (req, reply) => {
+  if (hitRateLimit(req, reply, "rooms:claim", 30, 60 * 1000)) return; // 30 / min / IP
   const { roomId } = req.params as { roomId: string };
   const body = (req.body || {}) as { accessCode?: string; deviceId?: string; name?: string };
   const accessCode = String(body.accessCode || "").trim();
@@ -369,6 +407,7 @@ app.post("/api/public/rooms/:roomId/claim", async (req, reply) => {
 });
 
 app.post("/api/public/rooms/:roomId/board", async (req, reply) => {
+  if (hitRateLimit(req, reply, "rooms:board", 90, 60 * 1000)) return; // 90 / min / IP
   const { roomId } = req.params as { roomId: string };
   const body = (req.body || {}) as { accessCode?: string };
   const accessCode = String(body.accessCode || "").trim();
