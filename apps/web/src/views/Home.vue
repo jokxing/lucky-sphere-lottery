@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "../lib/api";
 import FullScreenLoading from "../components/FullScreenLoading.vue";
+import { isHostedMode } from "../lib/hosted";
 
 const route = useRoute();
 const router = useRouter();
@@ -12,6 +13,14 @@ const loading = ref(false);
 const error = ref("");
 const apiBase = computed(() => String((import.meta as any).env?.VITE_API_BASE || "").trim());
 const devMode = computed(() => !!(import.meta as any).env?.DEV);
+const hosted = computed(() => isHostedMode());
+
+onMounted(() => {
+  // 托管模式：把首页当作“朋友圈红包入口”，减少无关功能暴露
+  if (hosted.value) {
+    router.replace("/rooms/new");
+  }
+});
 
 async function bootstrapDemo() {
   error.value = "";
@@ -45,13 +54,14 @@ async function bootstrapDemo() {
     <div class="actions">
       <button v-if="devMode" @click="bootstrapDemo" :disabled="loading">一键生成演示抽奖（写死导入+直接开奖）</button>
       <button @click="router.push('/rooms/new')" :disabled="loading">创建朋友圈红包（虚拟）</button>
-      <button v-if="!devMode" @click="router.push('/admin')" :disabled="loading">进入管理端（创建活动/抽奖）</button>
+      <button v-if="!devMode && !hosted" @click="router.push('/admin')" :disabled="loading">进入管理端（创建活动/抽奖）</button>
       <div v-if="error" class="error">错误：{{ error }}</div>
       <div v-if="devMode" class="muted">会清空本地 SQLite 数据库并写入演示数据（仅开发环境可用）。</div>
-      <div v-else class="ui-hint">线上站点默认不提供“一键生成演示数据”，请在管理端创建活动并进入 3D 舞台。</div>
+      <div v-else-if="!hosted" class="ui-hint">线上站点默认不提供“一键生成演示数据”，请在管理端创建活动并进入 3D 舞台。</div>
+      <div v-else class="ui-hint">托管版入口：请直接创建“朋友圈红包”，把链接 + 6 位口令发到群里。</div>
     </div>
 
-    <div v-if="exampleEventId">
+    <div v-if="exampleEventId && !hosted">
       <p>你可以直接打开：</p>
       <ul>
         <li><a :href="`/events/${exampleEventId}/signup`">报名页</a></li>
