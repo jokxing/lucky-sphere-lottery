@@ -5,13 +5,18 @@ const props = defineProps<{
 </script>
 
 <template>
-  <div class="overlay" role="status" aria-live="polite" aria-busy="true">
-    <div class="panel">
-      <div class="ring" aria-hidden="true" />
-      <div class="text">{{ props.text || "加载中…" }}</div>
-      <div class="sub">请稍候</div>
+  <!--
+    Teleport 到 body：避免在 3D 舞台/滤镜/transform 容器内导致 fixed 定位不按视口计算（某些浏览器会出现“不居中”）。
+  -->
+  <Teleport to="body">
+    <div class="overlay" role="status" aria-live="polite" aria-busy="true">
+      <div class="panel">
+        <div class="ring" aria-hidden="true" />
+        <div class="text">{{ props.text || "加载中…" }}</div>
+        <div class="sub">请稍候</div>
+      </div>
     </div>
-  </div>
+  </Teleport>
 </template>
 
 <style scoped>
