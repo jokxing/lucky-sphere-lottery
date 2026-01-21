@@ -10,6 +10,7 @@ import Draw from "./views/public/Draw.vue";
 import RoomNew from "./views/rooms/RoomNew.vue";
 import RoomPlay from "./views/rooms/RoomPlay.vue";
 import RoomBoard from "./views/rooms/RoomBoard.vue";
+import { isHostedMode } from "./lib/hosted";
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -26,6 +27,14 @@ export const router = createRouter({
     { path: "/rooms/:roomId", component: RoomPlay, props: true },
     { path: "/rooms/:roomId/board", component: RoomBoard, props: true },
   ],
+});
+
+// 托管模式下：不对外开放年会/管理端入口（避免别人猜路径）
+router.beforeEach((to) => {
+  if (!isHostedMode()) return true;
+  if (to.path.startsWith("/admin")) return { path: "/rooms/new", replace: true };
+  if (to.path.startsWith("/events/")) return { path: "/rooms/new", replace: true };
+  return true;
 });
 
 

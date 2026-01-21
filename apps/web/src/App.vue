@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed } from "vue";
 import { RouterLink, RouterView, useRoute } from "vue-router";
-import { isHostedMode } from "./lib/hosted";
+import { isHostedMode, isAdminMode } from "./lib/hosted";
 
 const route = useRoute();
 const isStage = computed(() => {
@@ -11,6 +11,7 @@ const isStage = computed(() => {
 });
 
 const hosted = computed(() => isHostedMode());
+const adminMode = computed(() => isAdminMode());
 </script>
 
 <template>
@@ -19,7 +20,7 @@ const hosted = computed(() => isHostedMode());
       <div class="brand">线上抽奖 · MVP</div>
       <nav class="nav">
         <RouterLink to="/">首页</RouterLink>
-        <RouterLink v-if="!hosted" to="/admin">管理端</RouterLink>
+        <RouterLink v-if="!hosted || adminMode" to="/admin">管理端</RouterLink>
         <RouterLink to="/rooms/new">朋友圈红包</RouterLink>
       </nav>
     </header>

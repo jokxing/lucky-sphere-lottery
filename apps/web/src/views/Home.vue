@@ -3,7 +3,7 @@ import { computed, onMounted, ref } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import { api } from "../lib/api";
 import FullScreenLoading from "../components/FullScreenLoading.vue";
-import { isHostedMode } from "../lib/hosted";
+import { isAdminMode, isHostedMode } from "../lib/hosted";
 
 const route = useRoute();
 const router = useRouter();
@@ -14,10 +14,11 @@ const error = ref("");
 const apiBase = computed(() => String((import.meta as any).env?.VITE_API_BASE || "").trim());
 const devMode = computed(() => !!(import.meta as any).env?.DEV);
 const hosted = computed(() => isHostedMode());
+const adminMode = computed(() => isAdminMode());
 
 onMounted(() => {
   // 托管模式：把首页当作“朋友圈红包入口”，减少无关功能暴露
-  if (hosted.value) {
+  if (hosted.value && !adminMode.value) {
     router.replace("/rooms/new");
   }
 });
