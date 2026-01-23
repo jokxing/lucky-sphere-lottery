@@ -74,14 +74,17 @@ function makeCardTexture(name: string, key: string) {
   // 背景：金红渐变（装饰卡会更克制一点）
   const g = ctx.createLinearGradient(0, 0, w, h);
   if (isFiller) {
-    // 偏暗、偏稳的装饰卡：避免抢戏
-    g.addColorStop(0, "#160c0c");
-    g.addColorStop(0.55, "#4a0f10");
-    g.addColorStop(1, "#d6a34e");
+    // 装饰卡：保持克制但仍是“红包红”，避免整屏发咖啡色
+    g.addColorStop(0, "#3a0606"); // deep red base
+    g.addColorStop(0.62, "#c2151e"); // saturated red
+    g.addColorStop(0.86, "#ffd06a"); // small gold highlight
+    g.addColorStop(1, "#8a0b14"); // back to deep red (avoid brown)
   } else {
-    g.addColorStop(0, "#3b0a0a");
-    g.addColorStop(0.5, "#b0121b");
-    g.addColorStop(1, "#f7c85b");
+    // 主卡：更偏红包红，金色只在角落做光感
+    g.addColorStop(0, "#4a0707");
+    g.addColorStop(0.58, "#e01625");
+    g.addColorStop(0.86, "#ffd06a");
+    g.addColorStop(1, "#9a0b14");
   }
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
@@ -259,11 +262,12 @@ function makeWinnerCardTexture(name: string) {
   c.height = h;
   const ctx = c.getContext("2d")!;
 
-  // 背景：更亮一点的金红（突出“开奖瞬间”）
+  // 背景：更红一点（避免发棕），金色只做角落高光
   const g = ctx.createLinearGradient(0, 0, w, h);
-  g.addColorStop(0, "#5a0b0b");
-  g.addColorStop(0.55, "#c2151e");
-  g.addColorStop(1, "#f7c85b");
+  g.addColorStop(0, "#4a0707");
+  g.addColorStop(0.58, "#e01625");
+  g.addColorStop(0.86, "#ffd06a");
+  g.addColorStop(1, "#9a0b14");
   ctx.fillStyle = g;
   ctx.fillRect(0, 0, w, h);
 
