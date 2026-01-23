@@ -26,6 +26,9 @@ export const router = createRouter({
     { path: "/rooms/new", component: RoomNew },
     { path: "/rooms/:roomId", component: RoomPlay, props: true },
     { path: "/rooms/:roomId/board", component: RoomBoard, props: true },
+    // short links (better for sharing; less scary than long URLs)
+    { path: "/r/:roomId", redirect: (to) => ({ path: `/rooms/${to.params.roomId}`, query: to.query }) },
+    { path: "/b/:roomId", redirect: (to) => ({ path: `/rooms/${to.params.roomId}/board`, query: to.query }) },
   ],
 });
 

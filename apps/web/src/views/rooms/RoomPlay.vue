@@ -25,8 +25,25 @@ const confettiOn = ref(false);
 const rolling = ref(false);
 const rollText = ref("开抽一次");
 
-const roomUrl = computed(() => `${location.origin}/rooms/${roomId.value}`);
-const boardUrl = computed(() => `${location.origin}/rooms/${roomId.value}/board`);
+// share shorter URLs (still same page)
+const roomUrl = computed(() => `${location.origin}/r/${roomId.value}`);
+const boardUrl = computed(() => `${location.origin}/b/${roomId.value}`);
+
+async function shareRoom() {
+  const url = roomUrl.value;
+  const text = `朋友圈红包：点开输入口令即可参与\n口令：${accessCode.value.trim() || "（见页面）"}`;
+  try {
+    const nav: any = navigator as any;
+    if (nav?.share) {
+      await nav.share({ title: "朋友圈红包", text, url });
+      toast.success("已调起分享");
+      return;
+    }
+  } catch {
+    // fall back to copy
+  }
+  await copy(url);
+}
 
 async function copy(text: string) {
   try {
@@ -180,6 +197,7 @@ watch(
           <div class="sub">房间号 <span class="mono">{{ roomId }}</span></div>
         </div>
         <div class="headerActions">
+          <button class="chip" @click="shareRoom" title="一键分享房间链接">一键分享</button>
           <button class="chip" @click="copy(roomUrl)" title="复制房间链接">复制链接</button>
           <button class="chip" @click="copy(boardUrl)" title="复制榜单链接">复制榜单</button>
         </div>
@@ -203,6 +221,7 @@ watch(
           <div class="sub">房间号 <span class="mono">{{ roomId }}</span></div>
         </div>
         <div class="headerActions">
+          <button class="chip" @click="shareRoom" title="一键分享房间链接">一键分享</button>
           <button class="chip" @click="copy(roomUrl)" title="复制房间链接">复制链接</button>
           <button class="chip" @click="copy(boardUrl)" title="复制榜单链接">复制榜单</button>
         </div>
