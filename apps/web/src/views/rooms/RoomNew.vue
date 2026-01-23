@@ -2,6 +2,9 @@
 import { ref } from "vue";
 import { api } from "../../lib/api";
 import FullScreenLoading from "../../components/FullScreenLoading.vue";
+import QrShareDialog from "../../components/QrShareDialog.vue";
+import { toast } from "../../lib/toast";
+import { copyToClipboard } from "../../lib/clipboard";
 
 function gen6() {
   return String(Math.floor(100000 + Math.random() * 900000));
@@ -18,6 +21,27 @@ const form = ref({
 const creating = ref(false);
 const created = ref<any>(null);
 const error = ref("");
+const qrOpen = ref(false);
+
+function roomUrl() {
+  if (!created.value?.roomId) return "";
+  return `${location.origin}/r/${created.value.roomId}`;
+}
+function boardUrl() {
+  if (!created.value?.roomId) return "";
+  return `${location.origin}/b/${created.value.roomId}`;
+}
+
+async function copyRoomUrl() {
+  const url = roomUrl();
+  if (!url) return;
+  try {
+    await copyToClipboard(url);
+    toast.success("已复制链接");
+  } catch {
+    toast.error("复制失败：请长按手动复制");
+  }
+}
 
 async function create() {
   error.value = "";
@@ -41,6 +65,15 @@ async function create() {
 
 <template>
   <FullScreenLoading v-if="creating" text="正在创建房间…" />
+  <QrShareDialog
+    :open="qrOpen"
+    title="分享二维码"
+    :items="[
+      { label: '参与页', url: roomUrl() },
+      { label: '榜单', url: boardUrl() },
+    ]"
+    @close="qrOpen = false"
+  />
   <section class="card">
     <div class="header">
       <div class="title">创建朋友圈红包 <span class="badge">虚拟</span></div>
@@ -74,6 +107,10 @@ async function create() {
     <div v-if="created" class="result">
       <div class="muted">房间已创建：</div>
       <div class="big">口令：{{ form.accessCode }}</div>
+      <div class="row" style="margin-top: 8px">
+        <button class="ghost" type="button" @click="copyRoomUrl">复制参与链接</button>
+        <button class="ghost" type="button" @click="qrOpen = true">二维码分享</button>
+      </div>
       <div class="muted">链接：</div>
       <a :href="`/rooms/${created.roomId}`">{{ `/rooms/${created.roomId}` }}</a>
       <div class="muted" style="margin-top: 8px">榜单：</div>

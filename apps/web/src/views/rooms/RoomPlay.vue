@@ -6,6 +6,7 @@ import { getDeviceId } from "../../lib/device";
 import { copyToClipboard } from "../../lib/clipboard";
 import { toast } from "../../lib/toast";
 import ThreeLuckySphere from "../../components/ThreeLuckySphere.vue";
+import QrShareDialog from "../../components/QrShareDialog.vue";
 
 const route = useRoute();
 const roomId = computed(() => String(route.params.roomId || ""));
@@ -28,6 +29,8 @@ const rollText = ref("开抽一次");
 // share shorter URLs (still same page)
 const roomUrl = computed(() => `${location.origin}/r/${roomId.value}`);
 const boardUrl = computed(() => `${location.origin}/b/${roomId.value}`);
+
+const qrOpen = ref(false);
 
 async function shareRoom() {
   const url = roomUrl.value;
@@ -178,6 +181,15 @@ watch(
 
 <template>
   <div class="wrap">
+    <QrShareDialog
+      :open="qrOpen"
+      title="分享二维码"
+      :items="[
+        { label: '参与页', url: roomUrl },
+        { label: '榜单', url: boardUrl },
+      ]"
+      @close="qrOpen = false"
+    />
     <div class="bg3d">
       <ThreeLuckySphere
         :people="fillers"
@@ -198,6 +210,7 @@ watch(
         </div>
         <div class="headerActions">
           <button class="chip" @click="shareRoom" title="一键分享房间链接">一键分享</button>
+          <button class="chip" @click="qrOpen = true" title="生成二维码分享">二维码</button>
           <button class="chip" @click="copy(roomUrl)" title="复制房间链接">复制链接</button>
           <button class="chip" @click="copy(boardUrl)" title="复制榜单链接">复制榜单</button>
         </div>
@@ -222,6 +235,7 @@ watch(
         </div>
         <div class="headerActions">
           <button class="chip" @click="shareRoom" title="一键分享房间链接">一键分享</button>
+          <button class="chip" @click="qrOpen = true" title="生成二维码分享">二维码</button>
           <button class="chip" @click="copy(roomUrl)" title="复制房间链接">复制链接</button>
           <button class="chip" @click="copy(boardUrl)" title="复制榜单链接">复制榜单</button>
         </div>
@@ -339,8 +353,11 @@ watch(
 .panelHeader {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
+  align-items: center;
   gap: 12px;
+}
+.panelHeader > div:first-child {
+  min-width: 0;
 }
 .brand {
   font-size: 18px;
@@ -368,16 +385,23 @@ watch(
 .headerActions {
   display: flex;
   gap: 8px;
-  flex-wrap: nowrap; /* PC：按钮文案不换行 */
+  flex-wrap: wrap; /* 允许换行：避免按钮过多时挤爆 */
+  justify-content: flex-end;
+  align-items: center;
 }
 .chip {
-  padding: 8px 10px;
-  border-radius: 14px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(0, 0, 0, 0.25);
+  padding: 7px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(0, 0, 0, 0.22);
   color: inherit;
-  opacity: 0.9;
+  opacity: 0.92;
+  font-size: 12px;
+  font-weight: 750;
   white-space: nowrap; /* PC：按钮文案不换行 */
+}
+.chip:hover {
+  border-color: rgba(255, 211, 122, 0.28);
 }
 .stats {
   margin-top: 12px;
@@ -505,11 +529,28 @@ input {
     backdrop-filter: blur(10px);
     box-shadow: 0 16px 60px rgba(0,0,0,0.35);
   }
+  /* mobile 顶部卡：保持横向（左标题 / 右二维码按钮） */
+  .topCard .panelHeader {
+    flex-direction: row;
+    align-items: center;
+  }
   /* 顶部信息卡做“薄”：隐藏房间号行、减少复制按钮占位，让 3D 更突出 */
   .topCard .sub {
     display: none;
   }
   .topCard .headerActions {
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+    margin-left: auto;
+  }
+  /* mobile 顶部卡：只保留一个“二维码”入口，避免按钮占位过大 */
+  .topCard .headerActions .chip {
+    flex: 0 0 auto;
+    min-height: 34px;
+    padding: 6px 10px;
+  }
+  .topCard .headerActions .chip:not(:nth-child(2)) {
     display: none;
   }
   .topCard .stats {
