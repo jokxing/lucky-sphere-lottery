@@ -2,6 +2,7 @@
 import { computed } from "vue";
 import { RouterLink, RouterView, useRoute } from "vue-router";
 import { isHostedMode, isAdminMode } from "./lib/hosted";
+import ToastHost from "./components/ToastHost.vue";
 
 const route = useRoute();
 const isStage = computed(() => {
@@ -16,6 +17,7 @@ const adminMode = computed(() => isAdminMode());
 
 <template>
   <div class="layout" :class="{ stage: isStage }">
+    <ToastHost />
     <header v-if="!isStage" class="topbar">
       <div class="brand">线上抽奖 · MVP</div>
       <nav class="nav">

@@ -3,6 +3,8 @@ import { computed, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import { ApiError, api } from "../../lib/api";
 import { getDeviceId } from "../../lib/device";
+import { copyToClipboard } from "../../lib/clipboard";
+import { toast } from "../../lib/toast";
 import ThreeLuckySphere from "../../components/ThreeLuckySphere.vue";
 
 const route = useRoute();
@@ -28,9 +30,11 @@ const boardUrl = computed(() => `${location.origin}/rooms/${roomId.value}/board`
 
 async function copy(text: string) {
   try {
-    await navigator.clipboard.writeText(text);
-  } catch {
-    // ignore
+    await copyToClipboard(text);
+    toast.success("已复制");
+  } catch (e: any) {
+    // iOS/微信 webview 可能禁用复制：给出可操作的兜底提示
+    toast.error("复制失败：请长按文本手动复制");
   }
 }
 

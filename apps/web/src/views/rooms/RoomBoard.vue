@@ -69,8 +69,9 @@ watch(
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
   padding: 18px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.16));
-  backdrop-filter: blur(10px);
+  background: var(--cardBg);
+  backdrop-filter: var(--cardBlur);
+  box-shadow: var(--cardInset), var(--cardShadow);
 }
 .header {
   display: grid;

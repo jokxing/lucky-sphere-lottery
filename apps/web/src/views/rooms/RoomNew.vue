@@ -87,9 +87,9 @@ async function create() {
   border: 1px solid rgba(255, 255, 255, 0.12);
   border-radius: 16px;
   padding: 18px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.35), rgba(0,0,0,0.16));
-  backdrop-filter: blur(10px);
-  box-shadow: 0 16px 60px rgba(0,0,0,0.35);
+  background: var(--cardBg);
+  backdrop-filter: var(--cardBlur);
+  box-shadow: var(--cardInset), var(--cardShadow);
   max-width: 920px; /* PC 端别铺满，比例更舒服 */
   margin: 36px auto 0; /* PC 端别太贴顶部 */
 }

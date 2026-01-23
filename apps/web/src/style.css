@@ -3,9 +3,33 @@
   line-height: 1.5;
   font-weight: 400;
 
-  color-scheme: light dark;
+  /* 强制暗色：避免移动端/Chrome 在 prefers-color-scheme: light 时把文字变深色，
+     但页面背景仍是暗色，导致“字体颜色看不清”。 */
+  color-scheme: dark;
   color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  /* use theme token for background to avoid cross-browser “top strip” */
+  background-color: var(--bg0);
+
+  /* surfaces / theme tokens (restore “card feel”) */
+  --bg0: #242424;
+  --bg1: rgba(255, 255, 255, 0.035);
+  --bg2: rgba(255, 255, 255, 0.06);
+  --bd1: rgba(255, 255, 255, 0.10);
+  --bd2: rgba(255, 211, 122, 0.18);
+  --text0: rgba(255, 255, 255, 0.90);
+  --text1: rgba(255, 255, 255, 0.74);
+  /* unify "card shadow" with 朋友圈红包页面 */
+  --cardShadow: 0 16px 60px rgba(0, 0, 0, 0.35);
+  --cardInset: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  --cardBg: linear-gradient(180deg, rgba(0, 0, 0, 0.35), rgba(0, 0, 0, 0.16));
+  --cardBlur: blur(10px);
+  /* legacy tokens (kept for other surfaces) */
+  --shadow1: 0 18px 60px rgba(0, 0, 0, 0.55);
+  --shadow2: 0 1px 0 rgba(255, 255, 255, 0.06) inset;
+  /* softer stage glow */
+  --glow: radial-gradient(1100px 680px at 18% 8%, rgba(255, 122, 26, 0.12), transparent 62%),
+    radial-gradient(980px 640px at 78% 0%, rgba(255, 211, 122, 0.10), transparent 64%),
+    radial-gradient(980px 640px at 60% 92%, rgba(120, 180, 255, 0.06), transparent 66%);
 
   font-synthesis: none;
   text-rendering: optimizeLegibility;
@@ -64,18 +88,33 @@ body {
 
 a {
   font-weight: 500;
-  color: #646cff;
+  color: rgba(157, 183, 255, 0.95);
   text-decoration: inherit;
 }
 a:hover {
-  color: #535bf2;
+  color: rgba(255, 211, 122, 0.95);
 }
 
 body {
-  margin: 0;
+  margin: 0 !important;
+  padding: 0 !important;
   display: block;
   min-width: 320px;
   min-height: 100vh;
+  color: var(--text0);
+}
+
+html,
+body {
+  background: var(--bg0);
+}
+
+/* Prefer fixed only on desktop-class pointers; mobile Safari/Chrome may glitch with fixed */
+@media (hover: hover) and (pointer: fine) {
+  html,
+  body {
+    background-attachment: fixed;
+  }
 }
 
 h1 {
@@ -90,12 +129,14 @@ button {
   font-size: 1em;
   font-weight: 500;
   font-family: inherit;
-  background-color: #1a1a1a;
+  background: var(--bg2);
+  border-color: var(--bd1);
+  color: var(--text0);
   cursor: pointer;
   transition: border-color 0.25s;
 }
 button:hover {
-  border-color: #646cff;
+  border-color: rgba(255, 211, 122, 0.35);
 }
 button:focus,
 button:focus-visible {
@@ -106,20 +147,43 @@ button:focus-visible {
   padding: 2em;
 }
 
+/* shared card style (gives “card feel” across pages) */
+.ui-card {
+  border: 1px solid var(--bd1);
+  border-radius: 16px;
+  background: var(--cardBg);
+  box-shadow: var(--cardInset), var(--cardShadow);
+  backdrop-filter: var(--cardBlur);
+}
+
+.ui-card--warm {
+  border-color: var(--bd2);
+  background: radial-gradient(900px 320px at 18% 16%, rgba(255, 122, 26, 0.14), transparent 60%),
+    radial-gradient(820px 320px at 80% 30%, rgba(255, 211, 122, 0.10), transparent 65%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0.03));
+}
+
+.ui-muted {
+  color: var(--text1);
+}
+
+/* form controls (Chrome/iOS/Android consistent) */
+input,
+select,
+textarea {
+  color: var(--text0);
+  background: rgba(0, 0, 0, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 255, 255, 0.45);
+}
+
 #app {
   width: 100%;
   min-height: 100vh;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
-}
+/* 不使用 prefers-color-scheme: light 的全局覆盖（会与深色 UI 冲突）。 */
